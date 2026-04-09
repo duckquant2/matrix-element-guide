@@ -6,11 +6,11 @@
 
 ## Архитектура
 
-- **Synapse** — сервер Matrix (Python, слушает на localhost:8008)
-- **PostgreSQL** — база данных
-- **Element Web** — веб-клиент (статика, раздаётся nginx)
-- **nginx** — reverse proxy + SSL termination
-- **Coturn** — TURN/STUN сервер для голосовых/видео звонков
+- **Synapse** - сервер Matrix (Python, слушает на localhost:8008)
+- **PostgreSQL** - база данных
+- **Element Web** - веб-клиент (статика, раздаётся nginx)
+- **nginx** - reverse proxy + SSL termination
+- **Coturn** - TURN/STUN сервер для голосовых/видео звонков
 
 ## Что понадобится
 
@@ -18,7 +18,7 @@
 - Домен (например `example.com`)
 - Доступ к DNS-записям домена
 
-## Шаг 0 — DNS
+## Шаг 0 - DNS
 
 Создай три A-записи, указывающие на IP твоего VPS:
 
@@ -28,7 +28,7 @@ matrix.example.com  →  <IP сервера>
 element.example.com →  <IP сервера>
 ```
 
-TTL поставь 300 (5 минут) — это ускорит переключение DNS, если понадобится.
+TTL поставь 300 (5 минут) - это ускорит переключение DNS, если понадобится.
 
 Проверка:
 
@@ -40,7 +40,7 @@ ping element.example.com
 
 ---
 
-## Шаг 1 — Подготовка сервера
+## Шаг 1 - Подготовка сервера
 
 ```bash
 sudo apt update && sudo apt upgrade -y
@@ -65,7 +65,7 @@ sudo ufw enable
 
 ---
 
-## Шаг 2 — PostgreSQL
+## Шаг 2 - PostgreSQL
 
 ```bash
 sudo -u postgres psql
@@ -84,16 +84,16 @@ CREATE DATABASE synapse
 \q
 ```
 
-> `LC_COLLATE='C'` обязателен — Synapse требует это для корректной сортировки.
+> `LC_COLLATE='C'` обязателен - Synapse требует это для корректной сортировки.
 
 ---
 
-## Шаг 3 — Установка Synapse
+## Шаг 3 - Установка Synapse
 
 Добавляем официальный репозиторий Matrix.org:
 
 При установке:
-- **Server name**: вводи `example.com` (не `matrix.example.com`!) — это будет часть Matrix ID: `@user:example.com`
+- **Server name**: вводи `example.com` (не `matrix.example.com`!) - это будет часть Matrix ID: `@user:example.com`
 - **Report statistics**: выбирай **No**
 
 ```bash
@@ -116,7 +116,7 @@ sudo systemctl stop matrix-synapse
 
 ---
 
-## Шаг 4 — Настройка homeserver.yaml
+## Шаг 4 - Настройка homeserver.yaml
 
 Бэкап оригинала:
 
@@ -181,7 +181,7 @@ enable_registration_without_verification: true
 # Секрет для создания пользователей через CLI
 registration_shared_secret: "СЕКРЕТ_РЕГИСТРАЦИИ"
 
-# Отключаем федерацию — закрытый сервер
+# Отключаем федерацию - закрытый сервер
 federation_domain_whitelist: []
 
 # Подавляем предупреждение о key server
@@ -215,7 +215,7 @@ cat /etc/matrix-synapse/conf.d/server_name.yaml
 
 ---
 
-## Шаг 5 — SSL-сертификаты
+## Шаг 5 - SSL-сертификаты
 
 ```bash
 sudo certbot certonly --nginx -d matrix.example.com -d element.example.com
@@ -230,7 +230,7 @@ sudo certbot renew --dry-run
 
 ---
 
-## Шаг 6 — nginx
+## Шаг 6 - nginx
 
 Создаём конфиг:
 
@@ -241,7 +241,7 @@ sudo nano /etc/nginx/sites-available/matrix
 Вставляем:
 
 ```nginx
-# Synapse — клиентский API
+# Synapse - клиентский API
 server {
     listen 443 ssl http2;
     server_name matrix.example.com;
@@ -259,7 +259,7 @@ server {
     }
 }
 
-# Element Web — фронтенд
+# Element Web - фронтенд
 server {
     listen 443 ssl http2;
     server_name element.example.com;
@@ -275,7 +275,7 @@ server {
     }
 }
 
-# Основной домен — .well-known для обнаружения сервера
+# Основной домен - .well-known для обнаружения сервера
 server {
     listen 443 ssl http2;
     server_name example.com;
@@ -320,7 +320,7 @@ sudo systemctl reload nginx
 
 ---
 
-## Шаг 7 — Запуск Synapse
+## Шаг 7 - Запуск Synapse
 
 ```bash
 sudo systemctl start matrix-synapse
@@ -337,7 +337,7 @@ curl https://matrix.example.com/_matrix/client/versions
 
 ---
 
-## Шаг 8 — Element Web
+## Шаг 8 - Element Web
 
 Скачиваем и разворачиваем:
 
@@ -390,7 +390,7 @@ curl -sI https://element.example.com | head -5
 
 ---
 
-## Шаг 9 — Coturn
+## Шаг 9 - Coturn
 
 ```bash
 sudo apt install -y coturn
@@ -435,7 +435,7 @@ no-tlsv1
 no-tlsv1_1
 ```
 
-> **СЕКРЕТ_COTURN** — тот же, что в homeserver.yaml в `turn_shared_secret`.
+> **СЕКРЕТ_COTURN** - тот же, что в homeserver.yaml в `turn_shared_secret`.
 
 Сохраняем: `Ctrl+O`, `Enter`, `Ctrl+X`.
 
@@ -448,7 +448,7 @@ sudo systemctl status coturn
 
 ---
 
-## Шаг 10 — Создание пользователей
+## Шаг 10 - Создание пользователей
 
 ```bash
 register_new_matrix_user -c /etc/matrix-synapse/homeserver.yaml http://localhost:8008
@@ -462,13 +462,13 @@ register_new_matrix_user -c /etc/matrix-synapse/homeserver.yaml http://localhost
 
 ---
 
-## Шаг 11 — Вход и настройка
+## Шаг 11 - Вход и настройка
 
 ### В браузере
 
 1. Открыть `https://element.example.com`
 2. Зарегистрироваться
-3. Настроить **Security Key** (Settings → Security & Privacy → Secure Backup) — **обязательно сохранить ключ!**
+3. Настроить **Security Key** (Settings → Security & Privacy → Secure Backup) - **обязательно сохранить ключ!**
 4. Установить Display Name и аватарку (Settings → General)
 
 ### На Android / iOS
@@ -545,7 +545,7 @@ sudo systemctl restart matrix-synapse
 
 ---
 
-## Шаг 12 — Бэкапы
+## Шаг 12 - Бэкапы
 
 Создаём папку и скрипт:
 
@@ -620,20 +620,20 @@ gunzip -c /home/backup/synapse_db_ДАТА.sql.gz | sudo -u postgres psql synaps
 
 ---
 
-## Шаг 13 — Автообновление безопасности
+## Шаг 13 - Автообновление безопасности
 
 ```bash
 sudo apt install -y unattended-upgrades
 sudo dpkg-reconfigure unattended-upgrades
 ```
 
-Выбери **Yes** — система будет автоматически ставить security-обновления.
+Выбери **Yes** - система будет автоматически ставить security-обновления.
 
 ---
 
-## Шаг 14 — Настройка прокси для белых списков
+## Шаг 14 - Настройка прокси для белых списков
 
-Запускаем сервер на Yandex Cloud.
+Запускаем сервер на Yandex Cloud / VK Cloud.
 
 Устанавливаем нужные пакеты:
 
@@ -662,7 +662,7 @@ matrix.example.com  →  <IP прокси>
 element.example.com →  <IP прокси>
 ```
 
-> A-запись `example.com` остаётся на IP основного сервера — она отдаёт `.well-known`.
+> A-запись `example.com` остаётся на IP основного сервера - она отдаёт `.well-known`.
 
 SSL-сертификаты:
 
@@ -783,7 +783,7 @@ sudo systemctl reload nginx
 
 ## Клиенты Matrix
 
-Matrix — это открытый протокол, и подключиться к серверу можно с любого совместимого клиента. Вот проверенные варианты:
+Matrix - это открытый протокол, и подключиться к серверу можно с любого совместимого клиента. Вот проверенные варианты:
 
 ### Рекомендуемые клиенты
 
@@ -811,9 +811,9 @@ Matrix — это открытый протокол, и подключиться
 
 При подключении к самостоятельному серверу в настройках клиента нужно указать адрес Homeserver: `https://matrix.example.com` (или свой домен, если настроен `.well-known`).
 
-**Element X** (iOS, Android) — новое поколение мобильного клиента от разработчиков Element. Требует Matrix Authentication Service (MAS) для авторизации и LiveKit для звонков. На self-hosted серверах с базовой настройкой Synapse **не будет работать** для звонков и может не работать для регистрации. Для переписки — работает.
+**Element X** (iOS, Android) - новое поколение мобильного клиента от разработчиков Element. Требует Matrix Authentication Service (MAS) для авторизации и LiveKit для звонков. На self-hosted серверах с базовой настройкой Synapse **не будет работать** для звонков и может не работать для регистрации. Для переписки - работает.
 
-**SchildiChat Next** (Android) — форк Element X с поддержкой Spaces. Те же ограничения, что у Element X.
+**SchildiChat Next** (Android) - форк Element X с поддержкой Spaces. Те же ограничения, что у Element X.
 
 Полный каталог клиентов: https://matrix.org/ecosystem/clients/
 
@@ -828,13 +828,13 @@ Telegram шифрует только «секретные чаты» один н
 WhatsApp использует E2E-шифрование, но сервер принадлежит Meta. Метаданные собираются для рекламного профилирования. Бэкапы в облаке по умолчанию не зашифрованы. Требует номер телефона. На self-hosted Matrix метаданные остаются на твоём сервере.
 
 ### По сравнению с Signal
-Signal — эталон шифрования, но сервер один и принадлежит фонду Signal Foundation. При блокировке в стране — зависимость от их прокси. Требует номер телефона. Self-hosted Matrix — ты контролируешь сервер и маршрутизацию.
+Signal - эталон шифрования, но сервер один и принадлежит фонду Signal Foundation. При блокировке в стране - зависимость от их прокси. Требует номер телефона. Self-hosted Matrix - ты контролируешь сервер и маршрутизацию.
 
 ### Что даёт self-hosted Matrix
 - Полный контроль над данными и инфраструктурой
-- Никакой привязки к телефону — полная анонимность
+- Никакой привязки к телефону - полная анонимность
 - Обход блокировок через relay-серверы
-- Выбор клиентов — не привязан к одному приложению
+- Выбор клиентов - не привязан к одному приложению
 - Открытый исходный код сервера и клиентов
 - Возможность уничтожить все данные, удалив VPS
 
@@ -842,9 +842,9 @@ Signal — эталон шифрования, но сервер один и пр
 
 ## Заметки
 
-- **Шифрование**: в зашифрованных комнатах шифруется всё — текст, фото, видео, аудио, файлы. Сервер хранит только зашифрованные данные.
+- **Шифрование**: в зашифрованных комнатах шифруется всё - текст, фото, видео, аудио, файлы. Сервер хранит только зашифрованные данные.
 - **Security Key**: без него при потере всех сессий зашифрованная переписка будет утрачена навсегда.
-- **Федерация**: отключена (`federation_domain_whitelist: []`). Для включения — убрать эту строку и перезапустить Synapse.
+- **Федерация**: отключена (`federation_domain_whitelist: []`). Для включения - убрать эту строку и перезапустить Synapse.
 - **Server name**: нельзя изменить после начала использования. Вшивается в ID пользователей, комнат и событий.
 - **Обновление Element Web**: скачать новую версию, распаковать в `/var/www/element`, скопировать `config.json`.
 - **Переключение на прямое подключение**: вернуть A-записи `matrix.example.com` и `element.example.com` на IP основного сервера, relay можно выключить.
@@ -853,9 +853,9 @@ Signal — эталон шифрования, но сервер один и пр
 
 ## Полезные ссылки
 
-- [Matrix.org](https://matrix.org/) — официальный сайт протокола Matrix
-- [Synapse](https://github.com/element-hq/synapse) — исходный код сервера
-- [Element Web](https://github.com/element-hq/element-web) — исходный код веб-клиента
-- [Каталог клиентов](https://matrix.org/ecosystem/clients/) — все известные клиенты Matrix
-- [Synapse Admin](https://admin.etke.cc) — веб-панель администрирования
-- [Документация Synapse](https://element-hq.github.io/synapse/latest/) — полная документация сервера
+- [Matrix.org](https://matrix.org/) - официальный сайт протокола Matrix
+- [Synapse](https://github.com/element-hq/synapse) - исходный код сервера
+- [Element Web](https://github.com/element-hq/element-web) - исходный код веб-клиента
+- [Каталог клиентов](https://matrix.org/ecosystem/clients/) - все известные клиенты Matrix
+- [Synapse Admin](https://admin.etke.cc) - веб-панель администрирования
+- [Документация Synapse](https://element-hq.github.io/synapse/latest/) - полная документация сервера
