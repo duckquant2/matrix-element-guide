@@ -633,7 +633,7 @@ sudo dpkg-reconfigure unattended-upgrades
 
 ## Шаг 14 — Настройка прокси для белых списков
 
-Запускаем сервер на Yandex Cloud / VK Cloud.
+Запускаем сервер на Yandex Cloud.
 
 Устанавливаем нужные пакеты:
 
